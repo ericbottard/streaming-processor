@@ -13,7 +13,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Channel;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 import io.projectriff.invoker.rpc.InputFrame;
 import io.projectriff.invoker.rpc.InputSignal;
 import io.projectriff.invoker.rpc.OutputFrame;
