@@ -169,7 +169,7 @@ public class Processor {
                 System.getenv(GROUP),
                 ReactorRiffGrpc.newReactorStub(fnChannel));
 
-                System.out.format("Connected to %s, after %d ms", functionAddress, System.currentTimeMillis() - t0);
+                System.out.format("Connected to %s, after %d ms\n", functionAddress, System.currentTimeMillis() - t0);
                 processor.run();
 
     }
