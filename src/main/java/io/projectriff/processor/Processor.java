@@ -141,6 +141,8 @@ public class Processor {
 
     public static void main(String[] args) throws Exception {
 
+        long t0 = System.currentTimeMillis();
+
         checkEnvironmentVariables();
 
         Hooks.onOperatorDebug();
@@ -167,7 +169,8 @@ public class Processor {
                 System.getenv(GROUP),
                 ReactorRiffGrpc.newReactorStub(fnChannel));
 
-        processor.run();
+                System.out.format("Connected to %s, after %d ms", functionAddress, System.currentTimeMillis() - t0);
+                processor.run();
 
     }
 
