@@ -15,7 +15,7 @@ function push() {
 }
 
 function main() {
-  ./mvnw -q -B compile -Dmaven.test.skip=true
+  ./mvnw -q -B package -Dmaven.test.skip=true
 
   local base_image="projectriff/streaming-processor-native"
   local version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout | tail -n1)
