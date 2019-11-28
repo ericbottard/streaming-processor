@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Main driver class for the streaming processor.
@@ -134,10 +135,10 @@ public class Processor {
 
         List<String> inputNames = Arrays.asList(System.getenv(INPUT_NAMES).split(","));
         List<String> outputNames = Arrays.asList(System.getenv(OUTPUT_NAMES).split(","));
-        
-        List<FullyQualifiedTopic> inputAddressableTopics = resolveStreams(System.getenv(CNB_BINDINGS), inputNames);
-        List<FullyQualifiedTopic> outputAddressableTopics = resolveStreams(System.getenv(CNB_BINDINGS), outputNames);
-        List<String> outputContentTypes = resolveContentTypes(System.getenv(CNB_BINDINGS), outputNames);
+
+        List<FullyQualifiedTopic> inputAddressableTopics = resolveStreams(System.getenv(CNB_BINDINGS), "input", inputNames.size());
+        List<FullyQualifiedTopic> outputAddressableTopics = resolveStreams(System.getenv(CNB_BINDINGS), "output", outputNames.size());
+        List<String> outputContentTypes = resolveContentTypes(System.getenv(CNB_BINDINGS), outputNames.size());
 
         assertHttpConnectivity(functionAddress);
         Channel fnChannel = NettyChannelBuilder.forTarget(functionAddress)
@@ -202,14 +203,14 @@ public class Processor {
         this.group = group;
     }
 
-    public static List<FullyQualifiedTopic> resolveStreams(String bindingsDir, List<String> aliases) {
-        return aliases.stream()
-                .map(a -> resolveStream(bindingsDir, a))
+    public static List<FullyQualifiedTopic> resolveStreams(String bindingsDir, String prefix, int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> resolveStream(bindingsDir, String.format("%s_%03d", prefix, i)))
                 .collect(Collectors.toList());
     }
 
-    private static FullyQualifiedTopic resolveStream(String bindingsDir, String alias) {
-        Path root = Paths.get(bindingsDir).resolve(alias).resolve("secret");
+    private static FullyQualifiedTopic resolveStream(String bindingsDir, String path) {
+        Path root = Paths.get(bindingsDir).resolve(path).resolve("secret");
         try {
             String gateway = Files.readString(root.resolve("gateway"));
             String topic = Files.readString(root.resolve("topic"));
@@ -340,20 +341,11 @@ public class Processor {
                 .build();
     }
 
-    private static List<String> resolveContentTypes(String bindingsDir, List<String> aliases) throws IOException {
+    private static List<String> resolveContentTypes(String bindingsDir, int count) throws IOException {
         List<String> result = new ArrayList<>();
-        for (String alias : aliases) {
-            result.add(Files.readString(Paths.get(bindingsDir).resolve(alias).resolve("metadata").resolve("contentType")));
+        for (int i = 0 ; i < count ; i++) {
+            result.add(Files.readString(Paths.get(bindingsDir).resolve(String.format("output_%03d", i)).resolve("metadata").resolve("contentType")));
         }
         return result;
-    }
-
-    private static List<String> parseCSV(String envVarName, int expectedSize) {
-        String[] split = System.getenv(envVarName).split(",");
-        if (split.length != expectedSize) {
-            throw new RuntimeException(String.format("Expected a list of %d values in variable %s, got %d: \"%s\"",
-                    expectedSize, envVarName, split.length, System.getenv(envVarName)));
-        }
-        return Arrays.asList(split);
     }
 }
