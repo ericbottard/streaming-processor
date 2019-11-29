@@ -29,6 +29,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -212,8 +213,8 @@ public class Processor {
     private static FullyQualifiedTopic resolveStream(String bindingsDir, String path) {
         Path root = Paths.get(bindingsDir).resolve(path).resolve("secret");
         try {
-            String gateway = Files.readString(root.resolve("gateway"));
-            String topic = Files.readString(root.resolve("topic"));
+            String gateway = new String(Files.readAllBytes(root.resolve("gateway")), StandardCharsets.UTF_8);
+            String topic = new String(Files.readAllBytes(root.resolve("topic")), StandardCharsets.UTF_8);
             return new FullyQualifiedTopic(gateway, topic);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -344,7 +345,8 @@ public class Processor {
     private static List<String> resolveContentTypes(String bindingsDir, int count) throws IOException {
         List<String> result = new ArrayList<>();
         for (int i = 0 ; i < count ; i++) {
-            result.add(Files.readString(Paths.get(bindingsDir).resolve(String.format("output_%03d", i)).resolve("metadata").resolve("contentType")));
+            Path path = Paths.get(bindingsDir).resolve(String.format("output_%03d", i)).resolve("metadata").resolve("contentType");
+            result.add(new String(Files.readAllBytes(path), StandardCharsets.UTF_8));
         }
         return result;
     }
