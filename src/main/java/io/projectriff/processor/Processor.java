@@ -324,6 +324,7 @@ public class Processor {
                                 .setDataContentType(next.getContentType())
                                 .setType("riff-event") // TODO
                                 .setSource(this.group) // TODO
+                                .putAllExtensions(next.getHeadersMap())
                                 .setId(UUID.randomUUID().toString())
                 )
                 .setTopic(topic)
@@ -352,6 +353,7 @@ public class Processor {
                     .setPayload(event.getData())
                     .setContentType(event.getDataContentType())
                     .setArgIndex(inputIndex)
+                    .putAllHeaders(event.getExtensionsMap())
                     .build();
         } else {
             throw new RuntimeException("Expected messages in CloudEvent format, got " + receiveReply.getReplyCase());
